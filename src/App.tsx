@@ -10,7 +10,7 @@ function App() {
         <div className="z-10">
           <Sidebar />
         </div>
-        <div className="z-1">
+        <div className="z-1 w-full h-full">
           <Routes>
             <Route path="/" element={<Home />} />
           </Routes>
