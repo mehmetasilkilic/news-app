@@ -38,13 +38,13 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [page, setPage] = useState<number>(1);
 
-  const transformData = (article: any): any => {
+  const transformGuardianData = (article: any): any => {
     return {
       source: {
         id: null,
         name: article.sectionName,
       },
-      author: article.productionOffice,
+      author: "Guardian",
       title: article.webTitle,
       description: article.fields.trailText,
       url: article.webUrl,
@@ -53,8 +53,24 @@ const Home = () => {
     };
   };
 
+  const transformNYTimesData = (article: any): any => {
+    return {
+      source: {
+        id: null,
+        name: article.title,
+      },
+      author: "New York Times",
+      title: article.title,
+      description: article.abstract,
+      url: article.webUrl,
+      urlToImage: article.media[0]["media-metadata"][1].url,
+      publishedAt: article.source,
+    };
+  };
+
   useEffect(() => {
-    // fetchData();
+    // getNewsAPIData();
+    getGuardianData();
     getNYTimesData();
   }, []);
 
@@ -75,8 +91,10 @@ const Home = () => {
       from: startDate,
       to: endDate,
     };
-    dispatch(newsActions.fetchNewsAPIData(params));
-    // setNews((prevNews) => [...prevNews, ...data.articles]);
+    const truthyParams = Object.fromEntries(
+      Object.entries(params).filter(([_, value]) => value)
+    );
+    dispatch(newsActions.fetchNewsAPIData(truthyParams));
   };
 
   const getGuardianData = async () => {
@@ -88,7 +106,10 @@ const Home = () => {
       "from-date": startDate,
       "to-date": endDate,
     };
-    dispatch(newsActions.fetchGuardianData(params));
+    const truthyParams = Object.fromEntries(
+      Object.entries(params).filter(([_, value]) => value)
+    );
+    dispatch(newsActions.fetchGuardianData(truthyParams));
 
     // const transformedData = data.response.results.map((article: any) =>
     //   transformData(article)
@@ -108,7 +129,10 @@ const Home = () => {
       begin_date: startDate,
       end_date: endDate,
     };
-    dispatch(newsActions.fetchNYTimesData(params));
+    const truthyParams = Object.fromEntries(
+      Object.entries(params).filter(([_, value]) => value)
+    );
+    dispatch(newsActions.fetchNYTimesData(truthyParams));
 
     // const transformedData = data.response.results.map((article: any) =>
     //   transformData(article)

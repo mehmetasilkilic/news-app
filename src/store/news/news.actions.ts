@@ -7,8 +7,8 @@ type NewsAPIFetchParams = {
   page?: number;
   pageSize?: number;
   category?: string;
-  from?: string;
-  to?: string;
+  from?: Date | null;
+  to?: Date | null;
 };
 
 type GuardianFetchParams = {
@@ -16,8 +16,8 @@ type GuardianFetchParams = {
   page?: number;
   tag?: string;
   "page-size"?: number;
-  "from-date"?: string;
-  "to-date"?: string;
+  "from-date"?: Date | null;
+  "to-date"?: Date | null;
 };
 
 type NYTimesFetchParams = {
@@ -25,8 +25,8 @@ type NYTimesFetchParams = {
   q?: string;
   page?: number;
   fq?: string;
-  begin_date?: string;
-  end_date?: string;
+  begin_date?: Date | null;
+  end_date?: Date | null;
 };
 
 const generateNewsAPIUrl = (params: NewsAPIFetchParams) => {
@@ -95,7 +95,7 @@ const fetchNewsAPIData = createAsyncThunk(
 );
 
 const fetchGuardianData = createAsyncThunk(
-  "news/fetchNewsAPIData",
+  "news/fetchGuardianData",
   async (args: GuardianFetchParams, { rejectWithValue }) => {
     const url = generateGuardianAPIUrl(args);
     try {
@@ -108,7 +108,7 @@ const fetchGuardianData = createAsyncThunk(
 );
 
 const fetchNYTimesData = createAsyncThunk(
-  "news/fetchNewsAPIData",
+  "news/fetchNYTimesData",
   async (args: NYTimesFetchParams, { rejectWithValue }) => {
     const url = generateNYTimesAPIUrl(args);
     try {

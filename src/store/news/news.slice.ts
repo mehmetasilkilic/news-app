@@ -69,6 +69,7 @@ export const newsSlice = createSlice({
         state.isLoading = false;
         state.isError = false;
         console.log(action.payload);
+        // state.news =  [...state.news, ...action.payload.articles]
       })
       .addCase(newsActions.fetchNewsAPIData.rejected, (state) => {
         state.isLoading = false;
@@ -81,7 +82,7 @@ export const newsSlice = createSlice({
       .addCase(newsActions.fetchGuardianData.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isError = false;
-        console.log(action.payload);
+        console.log(action.payload.data.response.results);
       })
       .addCase(newsActions.fetchGuardianData.rejected, (state) => {
         state.isLoading = false;
@@ -94,7 +95,7 @@ export const newsSlice = createSlice({
       .addCase(newsActions.fetchNYTimesData.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isError = false;
-        console.log(action.payload);
+        console.log(action.payload.data.results);
       })
       .addCase(newsActions.fetchNYTimesData.rejected, (state) => {
         state.isLoading = false;
