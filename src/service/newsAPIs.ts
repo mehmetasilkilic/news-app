@@ -1,23 +1,31 @@
 import axios from "axios";
-import { createAsyncThunk } from "@reduxjs/toolkit";
 
 type NewsAPIFetchParams = {
   endpoint: string;
   q?: string;
-  page?: string;
-  pageSize?: string;
+  page?: number;
+  pageSize?: number;
+  category?: string;
+  from?: string;
+  to?: string;
 };
 
 type GuardianFetchParams = {
   q?: string;
-  page?: string;
-  "page-size"?: string;
+  page?: number;
+  tag?: string;
+  "page-size"?: number;
+  "from-date"?: string;
+  "to-date"?: string;
 };
 
 type NYTimesFetchParams = {
   endpoint: string;
   q?: string;
-  page?: string;
+  page?: number;
+  fq?: string;
+  begin_date?: string;
+  end_date?: string;
 };
 
 const generateNewsAPIUrl = (params: NewsAPIFetchParams) => {
@@ -55,8 +63,16 @@ const generateNYTimesAPIUrl = (params: NYTimesFetchParams) => {
   const endpoint = params.endpoint;
   /* mostpopular/v2/viewed/1.json */
   const queryParams = Object.entries(params)
-    .filter(([key, value]) => key !== "endpoint" && value !== undefined)
-    .map(([key, value]) => `${key}=${value}`);
+    .filter(([key, value]) => key !== "endpoint" && value)
+    .map(([key, value]) => {
+      if (key === "fq") {
+        return `fq=news_desk:("${value}")`;
+      } else if (key === "begin_date" || key === "end_date") {
+        return `${key}=${String(value).replace(/\//g, "")}`;
+      } else {
+        return `${key}=${value}`;
+      }
+    });
 
   const queryString = queryParams.join("&");
 
@@ -64,43 +80,34 @@ const generateNYTimesAPIUrl = (params: NYTimesFetchParams) => {
   return url;
 };
 
-const fetchNewsAPIData = createAsyncThunk(
-  "news/fetchNewsAPIData",
-  async (args: NewsAPIFetchParams, { rejectWithValue }) => {
-    const url = generateNewsAPIUrl(args);
-    try {
-      const response = await axios.get(url);
-      return response.data;
-    } catch (e) {
-      throw rejectWithValue(e);
-    }
+const fetchNewsAPIData = async (args: NewsAPIFetchParams) => {
+  const url = generateNewsAPIUrl(args);
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (e) {
+    console.error("Error fetching news:", e);
   }
-);
+};
 
-const fetchGuardianData = createAsyncThunk(
-  "news/fetchNewsAPIData",
-  async (args: NewsAPIFetchParams, { rejectWithValue }) => {
-    const url = generateGuardianAPIUrl(args);
-    try {
-      const response = await axios.get(url);
-      return response.data;
-    } catch (e) {
-      throw rejectWithValue(e);
-    }
+const fetchGuardianData = async (args: GuardianFetchParams) => {
+  const url = generateGuardianAPIUrl(args);
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (e) {
+    console.error("Error fetching news:", e);
   }
-);
+};
 
-const fetchNYTimesData = createAsyncThunk(
-  "news/fetchNewsAPIData",
-  async (args: NewsAPIFetchParams, { rejectWithValue }) => {
-    const url = generateNYTimesAPIUrl(args);
-    try {
-      const response = await axios.get(url);
-      return response.data;
-    } catch (e) {
-      throw rejectWithValue(e);
-    }
+const fetchNYTimesData = async (args: NYTimesFetchParams) => {
+  const url = generateNYTimesAPIUrl(args);
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (e) {
+    console.error("Error fetching news:", e);
   }
-);
+};
 
 export { fetchNewsAPIData, fetchGuardianData, fetchNYTimesData };

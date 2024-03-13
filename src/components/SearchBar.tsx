@@ -23,7 +23,7 @@ const SearchBar = ({
         {searchText.length > 0 ? (
           <button
             type="submit"
-            className="absolute right-0 top-0 bottom-0 px-3  bg-blue-400 text-white"
+            className="absolute right-0 top-0 bottom-0 px-3 hover:bg-blue-600 bg-blue-400 text-white"
           >
             Search
           </button>
