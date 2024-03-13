@@ -45,7 +45,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    // fetchData();
   }, []);
 
   useEffect(() => {
