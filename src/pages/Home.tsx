@@ -9,6 +9,7 @@ import { newsActions } from "../store/news/news.actions";
 import { AppDispatch, RootState } from "../store/store";
 import { getTruthyParams } from "../utils/getTruthyParams";
 import { clearNewsData } from "../store/news/news.slice";
+import LoadingIndicator from "../components/LoadingIndicator";
 
 const Home = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -24,8 +25,9 @@ const Home = () => {
   );
 
   const [page, setPage] = useState<number>(1);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const getData = () => {
+  const getData = async () => {
     if (selectedSources.includes("NewsAPI")) {
       getNewsAPIData();
     }
@@ -38,8 +40,11 @@ const Home = () => {
   };
 
   useEffect(() => {
+    setIsLoading(true);
     dispatch(clearNewsData());
-    getData();
+    getData().then(() => {
+      setIsLoading(false);
+    });
   }, [searchQuery]);
 
   useEffect(() => {
@@ -111,20 +116,24 @@ const Home = () => {
       <section className="mb-8 pl-2">
         <div className="container mx-auto my-8">
           <h2 className="text-3xl font-semibold ">Latest News</h2>
-          <InfiniteScroll
-            dataLength={news.length}
-            next={fetchMoreData}
-            hasMore={
-              searchQuery || startDate || selectedCategory ? true : false
-            }
-            loader={<h4>Loading...</h4>}
-          >
-            <div className="container mx-auto my-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {news.map((article, index) => (
-                <NewsItem key={index} article={article} />
-              ))}
-            </div>
-          </InfiniteScroll>
+          {!isLoading ? (
+            <InfiniteScroll
+              dataLength={news.length}
+              next={fetchMoreData}
+              hasMore={
+                searchQuery || startDate || selectedCategory ? true : false
+              }
+              loader={<h4>Loading...</h4>}
+            >
+              <div className="container mx-auto my-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {news.map((article, index) => (
+                  <NewsItem key={index} article={article} />
+                ))}
+              </div>
+            </InfiniteScroll>
+          ) : (
+            <LoadingIndicator />
+          )}
         </div>
       </section>
     </div>
