@@ -11,20 +11,14 @@ import {
   updateStartDate,
   updateEndDate,
   updateSelectedCategory,
+  clearNewsData,
 } from "../store/news/news.slice";
-import { RootState } from "../store/store";
+import { AppDispatch, RootState } from "../store/store";
+import { newsActions } from "../store/news/news.actions";
+import { getTruthyParams } from "../utils/getTruthyParams";
 
-// interface ArticleFilter {
-//   date: Date | null;
-//   category: string;
-//   sources: string[];
-// }
-
-// interface ArticleFilterSidebarProps {
-//   onFilter: (filter: ArticleFilter) => void;
-// }
 const Sidebar = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const startDate = useSelector((state: RootState) => state.news.startDate);
   const endDate = useSelector((state: RootState) => state.news.endDate);
   const selectedCategory = useSelector(
@@ -36,6 +30,44 @@ const Sidebar = () => {
 
   const [isOpen, setIsOpen] = useState(false);
 
+  const getNewsAPIData = async () => {
+    const params = {
+      endpoint: "top-headlines",
+      page: 1,
+      pageSize: 10,
+      category: selectedCategory,
+      from: startDate,
+      to: endDate,
+    };
+    const truthyParams = getTruthyParams(params);
+    dispatch(newsActions.fetchNewsAPIData(truthyParams));
+  };
+
+  const getGuardianData = async () => {
+    const params = {
+      endpoint: selectedCategory ? "tags" : "search",
+      page: 1,
+      section: selectedCategory,
+      "page-size": 10,
+      "from-date": startDate,
+      "to-date": endDate,
+    };
+    const truthyParams = getTruthyParams(params);
+    dispatch(newsActions.fetchGuardianData(truthyParams));
+  };
+
+  const getNYTimesData = async () => {
+    const params = {
+      endpoint: "search/v2/articlesearch.json",
+      page: 1,
+      fq: selectedCategory,
+      begin_date: startDate,
+      end_date: endDate,
+    };
+    const truthyParams = getTruthyParams(params);
+    dispatch(newsActions.fetchNYTimesData(truthyParams));
+  };
+
   const handleFilterClick = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -43,18 +75,17 @@ const Sidebar = () => {
       alert("Please select at least one news source.");
       return;
     }
-    const params = {
-      startDate,
-      endDate,
-      selectedCategory,
-      selectedSources,
-    };
-    // Filter out falsy values and log the truthy ones
-    const truthyParams = Object.fromEntries(
-      Object.entries(params).filter(([_, value]) => value)
-    );
-    if (Object.keys(truthyParams).length > 0) {
-      console.log(truthyParams);
+
+    dispatch(clearNewsData());
+
+    if (selectedSources.includes("NewsAPI")) {
+      getNewsAPIData();
+    }
+    if (selectedSources.includes("Guardian")) {
+      getGuardianData();
+    }
+    if (selectedSources.includes("NYTimes")) {
+      getNYTimesData();
     }
   };
 
@@ -67,7 +98,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="md:flex h-14 md:h-full md:flex-shrink-0">
+    <div className="md:flex md:h-full md:flex-shrink-0 md:w-72">
       <div className="md:hidden flex flex-shrink-0 bg-gray-800 w-full items-center justify-between ">
         <div className="text-white font-bold px-4">
           <Link to="/">News App</Link>
@@ -81,7 +112,7 @@ const Sidebar = () => {
       </div>
       <div
         className={`bg-gray-800 ${
-          isOpen ? "w-72" : "w-0"
+          isOpen ? "w-full" : "w-0"
         } overflow-hidden md:w-72 md:transition-all md:duration-300 md:transform md:ease-in-out fixed left-0 top-0 bottom-0`}
       >
         <div className="px-4">
@@ -97,7 +128,7 @@ const Sidebar = () => {
                   className="border w-32"
                   dateFormat="yyyy/MM/dd"
                   selected={startDate}
-                  onChange={(date) => updateStartDate(date)}
+                  onChange={(date) => dispatch(updateStartDate(date))}
                   selectsStart
                   startDate={startDate}
                   endDate={endDate}
@@ -107,7 +138,7 @@ const Sidebar = () => {
                   className="border w-32 ml-2"
                   dateFormat="yyyy/MM/dd"
                   selected={endDate}
-                  onChange={(date) => updateEndDate(date)}
+                  onChange={(date) => dispatch(updateEndDate(date))}
                   selectsEnd
                   startDate={startDate}
                   endDate={endDate}
@@ -121,7 +152,9 @@ const Sidebar = () => {
               <select
                 className="border p-2"
                 value={selectedCategory}
-                onChange={(e) => updateSelectedCategory(e.target.value)}
+                onChange={(e) =>
+                  dispatch(updateSelectedCategory(e.target.value))
+                }
               >
                 <option value="">Select Category</option>
                 <option value="business">Business</option>

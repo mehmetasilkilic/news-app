@@ -7,20 +7,22 @@ type NewsAPIFetchParams = {
   page?: number;
   pageSize?: number;
   category?: string;
+  country?: string;
   from?: Date | null;
   to?: Date | null;
 };
 
 type GuardianFetchParams = {
+  endpoint: string;
   q?: string;
   page?: number;
-  tag?: string;
+  section?: string;
   "page-size"?: number;
-  "from-date"?: Date | null;
-  "to-date"?: Date | null;
+  "from-date"?: string;
+  "to-date"?: string;
 };
 
-type NYTimesFetchParams = {
+export type NYTimesFetchParams = {
   endpoint: string;
   q?: string;
   page?: number;
@@ -34,6 +36,10 @@ const generateNewsAPIUrl = (params: NewsAPIFetchParams) => {
   const newsAPIKey = "2c2ceb1d9ddd4c2d9cc90c88beb9459c";
   const endpoint = params.endpoint;
 
+  if (endpoint === "top-headlines") {
+    params.country = "us";
+  }
+
   const queryParams = Object.entries(params)
     .filter(([key, value]) => key !== "endpoint" && value !== undefined)
     .map(([key, value]) => `${key}=${value}`);
@@ -45,16 +51,17 @@ const generateNewsAPIUrl = (params: NewsAPIFetchParams) => {
 };
 
 const generateGuardianAPIUrl = (params: GuardianFetchParams) => {
-  const baseUrl = "https://content.guardianapis.com/search";
+  const baseUrl = "https://content.guardianapis.com";
   const guardianKey = "b8a48d7a-80cd-4547-9d24-5ee5d7c607ed";
+  const endpoint = params.endpoint;
 
   const queryParams = Object.entries(params)
-    .filter(([key, value]) => value !== undefined)
+    .filter(([key, value]) => key !== "endpoint" && value)
     .map(([key, value]) => `${key}=${value}`);
 
   const queryString = queryParams.join("&");
 
-  const url = `${baseUrl}?${queryString}&api-key=${guardianKey}&show-fields=thumbnail,productionOffice,trailText`;
+  const url = `${baseUrl}/${endpoint}?${queryString}&api-key=${guardianKey}&show-fields=thumbnail,productionOffice,trailText`;
   return url;
 };
 
@@ -67,7 +74,8 @@ const generateNYTimesAPIUrl = (params: NYTimesFetchParams) => {
     .filter(([key, value]) => key !== "endpoint" && value)
     .map(([key, value]) => {
       if (key === "fq") {
-        return `fq=news_desk:("${value}")`;
+        const newValue = value.charAt(0).toUpperCase() + value.slice(1);
+        return `fq=news_desk:("${newValue}")`;
       } else if (key === "begin_date" || key === "end_date") {
         return `${key}=${String(value).replace(/\//g, "")}`;
       } else {

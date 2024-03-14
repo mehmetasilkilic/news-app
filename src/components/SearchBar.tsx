@@ -1,15 +1,21 @@
-import { ChangeEvent, FormEvent } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
+import { useDispatch } from "react-redux";
 
-type SearchBarProps = {
-  handleSearchSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  handleSearchChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  searchText: string;
-};
-const SearchBar = ({
-  handleSearchSubmit,
-  handleSearchChange,
-  searchText,
-}: SearchBarProps) => {
+import { clearNewsData, updateSearchQuery } from "../store/news/news.slice";
+import { AppDispatch } from "../store/store";
+
+const SearchBar = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [searchText, setSearchText] = useState<string>("");
+
+  const handleSearchSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    dispatch(clearNewsData());
+    dispatch(updateSearchQuery(searchText));
+  };
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+  };
   return (
     <div className="flex items-center">
       <form onSubmit={handleSearchSubmit} className="relative">

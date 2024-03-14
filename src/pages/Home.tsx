@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import { useState, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -7,25 +7,15 @@ import NewsItem from "../components/NewsItem";
 
 import { newsActions } from "../store/news/news.actions";
 import { AppDispatch, RootState } from "../store/store";
-
-type Article = {
-  source: {
-    id: null | string;
-    name: string;
-  };
-  author: string;
-  title: string;
-  description: string;
-  url: string;
-  urlToImage: string;
-  publishedAt: string;
-  content: string;
-};
+import { getTruthyParams } from "../utils/getTruthyParams";
+import { clearNewsData } from "../store/news/news.slice";
 
 const Home = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const news = useSelector((state: RootState) => state.news.news);
   const startDate = useSelector((state: RootState) => state.news.startDate);
   const endDate = useSelector((state: RootState) => state.news.endDate);
+  const searchQuery = useSelector((state: RootState) => state.news.searchQuery);
   const selectedCategory = useSelector(
     (state: RootState) => state.news.selectedCategory
   );
@@ -33,53 +23,30 @@ const Home = () => {
     (state: RootState) => state.news.selectedSources
   );
 
-  const [news, setNews] = useState<Article[]>([]);
-  const [searchText, setSearchText] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [page, setPage] = useState<number>(1);
 
-  const transformGuardianData = (article: any): any => {
-    return {
-      source: {
-        id: null,
-        name: article.sectionName,
-      },
-      author: "Guardian",
-      title: article.webTitle,
-      description: article.fields.trailText,
-      url: article.webUrl,
-      urlToImage: article.fields.thumbnail,
-      publishedAt: article.webPublicationDate,
-    };
-  };
-
-  const transformNYTimesData = (article: any): any => {
-    return {
-      source: {
-        id: null,
-        name: article.title,
-      },
-      author: "New York Times",
-      title: article.title,
-      description: article.abstract,
-      url: article.webUrl,
-      urlToImage: article.media[0]["media-metadata"][1].url,
-      publishedAt: article.source,
-    };
+  const getData = () => {
+    if (selectedSources.includes("NewsAPI")) {
+      // getNewsAPIData();
+    }
+    if (selectedSources.includes("Guardian")) {
+      // getGuardianData();
+    }
+    if (selectedSources.includes("NYTimes")) {
+      getNYTimesData();
+    }
   };
 
   useEffect(() => {
-    // getNewsAPIData();
-    getGuardianData();
-    getNYTimesData();
+    dispatch(clearNewsData());
+    getData();
   }, []);
 
   useEffect(() => {
     if (searchQuery) {
-      // getPaginationData();
+      getData();
     }
   }, [page]);
-  // const url = `https://content.guardianapis.com/search?api-key=${apiKey}&show-fields=thumbnail,productionOffice,trailText`;
 
   const getNewsAPIData = async () => {
     const params = {
@@ -91,30 +58,22 @@ const Home = () => {
       from: startDate,
       to: endDate,
     };
-    const truthyParams = Object.fromEntries(
-      Object.entries(params).filter(([_, value]) => value)
-    );
+    const truthyParams = getTruthyParams(params);
     dispatch(newsActions.fetchNewsAPIData(truthyParams));
   };
 
   const getGuardianData = async () => {
     const params = {
+      endpoint: selectedCategory ? "content" : "search",
       q: searchQuery,
       page,
-      tag: selectedCategory,
+      section: selectedCategory,
       "page-size": 10,
       "from-date": startDate,
       "to-date": endDate,
     };
-    const truthyParams = Object.fromEntries(
-      Object.entries(params).filter(([_, value]) => value)
-    );
+    const truthyParams = getTruthyParams(params);
     dispatch(newsActions.fetchGuardianData(truthyParams));
-
-    // const transformedData = data.response.results.map((article: any) =>
-    //   transformData(article)
-    // );
-    // setNews((prevNews) => [...prevNews, ...data.articles]);
   };
 
   const getNYTimesData = async () => {
@@ -124,43 +83,25 @@ const Home = () => {
     const params = {
       endpoint,
       q: searchQuery,
-      // page,
+      page: endpoint === "search/v2/articlesearch.json" ? page : "",
       fq: selectedCategory,
       begin_date: startDate,
       end_date: endDate,
     };
-    const truthyParams = Object.fromEntries(
-      Object.entries(params).filter(([_, value]) => value)
-    );
+
+    const truthyParams = getTruthyParams(params);
     dispatch(newsActions.fetchNYTimesData(truthyParams));
-
-    // const transformedData = data.response.results.map((article: any) =>
-    //   transformData(article)
-    // );
-    // setNews((prevNews) => [...prevNews, ...data.articles]);
   };
 
-  const handleSearchSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSearchQuery(searchText);
-    // getSearch();
-  };
-  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchText(e.target.value);
-  };
   const fetchMoreData = () => {
     setPage((prevPage) => prevPage + 1);
   };
 
   return (
-    <div>
+    <div className="w-full">
       <nav className="bg-gray-800 p-4">
-        <div className="container ml-2 md:ml-96">
-          <SearchBar
-            handleSearchSubmit={handleSearchSubmit}
-            handleSearchChange={handleSearchChange}
-            searchText={searchText}
-          />
+        <div className="container md:pl-96">
+          <SearchBar />
         </div>
       </nav>
 
@@ -171,7 +112,9 @@ const Home = () => {
             dataLength={news.length}
             next={fetchMoreData}
             // hasMore={news.length < totalResults - page * 20}
-            hasMore={true}
+            hasMore={
+              searchQuery || startDate || selectedCategory ? true : false
+            }
             loader={<h4>Loading...</h4>}
           >
             <div className="container mx-auto my-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

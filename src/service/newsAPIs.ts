@@ -11,9 +11,10 @@ type NewsAPIFetchParams = {
 };
 
 type GuardianFetchParams = {
+  endpoint: string;
   q?: string;
   page?: number;
-  tag?: string;
+  section?: string;
   "page-size"?: number;
   "from-date"?: string;
   "to-date"?: string;
@@ -44,8 +45,9 @@ const generateNewsAPIUrl = (params: NewsAPIFetchParams) => {
 };
 
 const generateGuardianAPIUrl = (params: GuardianFetchParams) => {
-  const baseUrl = "https://content.guardianapis.com/search";
+  const baseUrl = "https://content.guardianapis.com";
   const guardianKey = "b8a48d7a-80cd-4547-9d24-5ee5d7c607ed";
+  const endpoint = params.endpoint;
 
   const queryParams = Object.entries(params)
     .filter(([key, value]) => value !== undefined)
@@ -53,7 +55,7 @@ const generateGuardianAPIUrl = (params: GuardianFetchParams) => {
 
   const queryString = queryParams.join("&");
 
-  const url = `${baseUrl}?${queryString}&api-key=${guardianKey}&show-fields=thumbnail,productionOffice,trailText`;
+  const url = `${baseUrl}/${endpoint}?${queryString}&api-key=${guardianKey}&show-fields=thumbnail,productionOffice,trailText`;
   return url;
 };
 
