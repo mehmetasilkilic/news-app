@@ -8,8 +8,8 @@ type NewsAPIFetchParams = {
   pageSize?: number;
   category?: string;
   country?: string;
-  from?: Date | null;
-  to?: Date | null;
+  from?: string;
+  to?: string;
 };
 
 type GuardianFetchParams = {
@@ -27,8 +27,8 @@ export type NYTimesFetchParams = {
   q?: string;
   page?: number;
   fq?: string;
-  begin_date?: Date | null;
-  end_date?: Date | null;
+  begin_date?: string;
+  end_date?: string;
 };
 
 const generateNewsAPIUrl = (params: NewsAPIFetchParams) => {
@@ -42,7 +42,20 @@ const generateNewsAPIUrl = (params: NewsAPIFetchParams) => {
 
   const queryParams = Object.entries(params)
     .filter(([key, value]) => key !== "endpoint" && value !== undefined)
-    .map(([key, value]) => `${key}=${value}`);
+    .map(([key, value]) => {
+      if (key === "from" || key === "to") {
+        const date = new Date(value);
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+
+        const formattedDate = `${year}-${month}-${day}`;
+        return `${key}=${formattedDate}`;
+      } else {
+        return `${key}=${value}`;
+      }
+    });
 
   const queryString = queryParams.join("&");
 
@@ -57,7 +70,20 @@ const generateGuardianAPIUrl = (params: GuardianFetchParams) => {
 
   const queryParams = Object.entries(params)
     .filter(([key, value]) => key !== "endpoint" && value)
-    .map(([key, value]) => `${key}=${value}`);
+    .map(([key, value]) => {
+      if (key === "from-date" || key === "to-date") {
+        const date = new Date(value);
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+
+        const formattedDate = `${year}-${month}-${day}`;
+        return `${key}=${formattedDate}`;
+      } else {
+        return `${key}=${value}`;
+      }
+    });
 
   const queryString = queryParams.join("&");
 
@@ -74,10 +100,18 @@ const generateNYTimesAPIUrl = (params: NYTimesFetchParams) => {
     .filter(([key, value]) => key !== "endpoint" && value)
     .map(([key, value]) => {
       if (key === "fq") {
-        const newValue = value.charAt(0).toUpperCase() + value.slice(1);
+        const newValue =
+          String(value).charAt(0).toUpperCase() + String(value).slice(1);
         return `fq=news_desk:("${newValue}")`;
       } else if (key === "begin_date" || key === "end_date") {
-        return `${key}=${String(value).replace(/\//g, "")}`;
+        const date = new Date(value);
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+
+        const formattedDate = `${year}${month}${day}`;
+        return `${key}=${formattedDate}`;
       } else {
         return `${key}=${value}`;
       }

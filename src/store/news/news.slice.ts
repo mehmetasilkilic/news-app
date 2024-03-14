@@ -49,6 +49,14 @@ export const newsSlice = createSlice({
     clearNewsData: (state) => {
       state.news = [];
     },
+    clearSearchQuery: (state) => {
+      state.searchQuery = "";
+    },
+    clearFilter: (state) => {
+      state.startDate = null;
+      state.endDate = null;
+      state.selectedCategory = "";
+    },
     updateSearchQuery: (state, action) => {
       state.searchQuery = action.payload;
     },
@@ -113,14 +121,11 @@ export const newsSlice = createSlice({
       .addCase(newsActions.fetchNYTimesData.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isError = false;
-        console.log("payload", action.payload);
 
         const results = action.payload.data.results
           ? action.payload.data.results
           : action.payload.data.response.docs;
 
-        console.log("results", results);
-        console.log("payload", action.payload);
         const transformedData = results.map((article: any) =>
           transformNYTimesData(article)
         );
@@ -133,9 +138,10 @@ export const newsSlice = createSlice({
   },
 });
 
-// Action creators are generated for each case reducer function
 export const {
+  clearFilter,
   clearNewsData,
+  clearSearchQuery,
   updateSearchQuery,
   updateStartDate,
   updateEndDate,

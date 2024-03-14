@@ -24,7 +24,7 @@ const SearchBar = () => {
           placeholder="Search..."
           value={searchText}
           onChange={handleSearchChange}
-          className="bg-gray-800 text-white border-gray-300 w-96 py-2 pl-4 focus:outline-none focus:border-blue-500"
+          className="bg-gray-800 text-white border-gray-300 w-72 py-2 pl-4 focus:outline-none focus:border-blue-500"
         />
         {searchText.length > 0 ? (
           <button

@@ -27,10 +27,10 @@ const Home = () => {
 
   const getData = () => {
     if (selectedSources.includes("NewsAPI")) {
-      // getNewsAPIData();
+      getNewsAPIData();
     }
     if (selectedSources.includes("Guardian")) {
-      // getGuardianData();
+      getGuardianData();
     }
     if (selectedSources.includes("NYTimes")) {
       getNYTimesData();
@@ -40,17 +40,17 @@ const Home = () => {
   useEffect(() => {
     dispatch(clearNewsData());
     getData();
-  }, []);
+  }, [searchQuery]);
 
   useEffect(() => {
-    if (searchQuery) {
+    if (searchQuery || startDate || selectedCategory) {
       getData();
     }
   }, [page]);
 
   const getNewsAPIData = async () => {
     const params = {
-      endpoint: "top-headlines",
+      endpoint: searchQuery ? "everything" : "top-headlines",
       q: searchQuery,
       page,
       pageSize: 10,
@@ -59,12 +59,13 @@ const Home = () => {
       to: endDate,
     };
     const truthyParams = getTruthyParams(params);
+    // @ts-ignore
     dispatch(newsActions.fetchNewsAPIData(truthyParams));
   };
 
   const getGuardianData = async () => {
     const params = {
-      endpoint: selectedCategory ? "content" : "search",
+      endpoint: selectedCategory ? "tags" : "search",
       q: searchQuery,
       page,
       section: selectedCategory,
@@ -73,6 +74,7 @@ const Home = () => {
       "to-date": endDate,
     };
     const truthyParams = getTruthyParams(params);
+    // @ts-ignore
     dispatch(newsActions.fetchGuardianData(truthyParams));
   };
 
@@ -90,6 +92,7 @@ const Home = () => {
     };
 
     const truthyParams = getTruthyParams(params);
+    // @ts-ignore
     dispatch(newsActions.fetchNYTimesData(truthyParams));
   };
 
@@ -100,7 +103,7 @@ const Home = () => {
   return (
     <div className="w-full">
       <nav className="bg-gray-800 p-4">
-        <div className="container md:pl-96">
+        <div className="container flex justify-center items-center">
           <SearchBar />
         </div>
       </nav>
@@ -111,7 +114,6 @@ const Home = () => {
           <InfiniteScroll
             dataLength={news.length}
             next={fetchMoreData}
-            // hasMore={news.length < totalResults - page * 20}
             hasMore={
               searchQuery || startDate || selectedCategory ? true : false
             }

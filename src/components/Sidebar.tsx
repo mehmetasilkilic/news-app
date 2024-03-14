@@ -12,6 +12,8 @@ import {
   updateEndDate,
   updateSelectedCategory,
   clearNewsData,
+  clearSearchQuery,
+  clearFilter,
 } from "../store/news/news.slice";
 import { AppDispatch, RootState } from "../store/store";
 import { newsActions } from "../store/news/news.actions";
@@ -40,6 +42,7 @@ const Sidebar = () => {
       to: endDate,
     };
     const truthyParams = getTruthyParams(params);
+    // @ts-ignore
     dispatch(newsActions.fetchNewsAPIData(truthyParams));
   };
 
@@ -53,6 +56,7 @@ const Sidebar = () => {
       "to-date": endDate,
     };
     const truthyParams = getTruthyParams(params);
+    // @ts-ignore
     dispatch(newsActions.fetchGuardianData(truthyParams));
   };
 
@@ -65,6 +69,7 @@ const Sidebar = () => {
       end_date: endDate,
     };
     const truthyParams = getTruthyParams(params);
+    // @ts-ignore
     dispatch(newsActions.fetchNYTimesData(truthyParams));
   };
 
@@ -77,6 +82,7 @@ const Sidebar = () => {
     }
 
     dispatch(clearNewsData());
+    dispatch(clearSearchQuery());
 
     if (selectedSources.includes("NewsAPI")) {
       getNewsAPIData();
@@ -98,8 +104,8 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="md:flex md:h-full md:flex-shrink-0 md:w-72">
-      <div className="md:hidden flex flex-shrink-0 bg-gray-800 w-full items-center justify-between ">
+    <div className="md:flex h-14 md:h-full md:flex-shrink-0 md:w-72">
+      <div className="md:hidden flex flex-shrink-0 bg-gray-800 w-full items-center justify-between">
         <div className="text-white font-bold px-4">
           <Link to="/">News App</Link>
         </div>
@@ -113,16 +119,16 @@ const Sidebar = () => {
       <div
         className={`bg-gray-800 ${
           isOpen ? "w-full" : "w-0"
-        } overflow-hidden md:w-72 md:transition-all md:duration-300 md:transform md:ease-in-out fixed left-0 top-0 bottom-0`}
+        } overflow-hidden md:w-72 md:transition-all md:duration-300 md:transform md:ease-in-out md:fixed md:left-0 md:top-0 md:bottom-0`}
       >
-        <div className="px-4">
+        <div className="px-4 pb-4">
           <form onSubmit={handleFilterClick}>
-            <div className="text-white font-bold py-4">
+            <div className="text-white font-bold py-4 hidden md:block">
               <Link to="/">News App</Link>
             </div>
             <label className="block mb-2 ">
               <p className="text-white">Date:</p>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between w-64">
                 <DatePicker
                   showIcon
                   className="border w-32"
@@ -206,6 +212,12 @@ const Sidebar = () => {
               className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-600"
             >
               Apply Filter
+            </button>
+            <button
+              onClick={() => dispatch(clearFilter())}
+              className="bg-blue-400 text-white px-4 py-2 ml-2 rounded hover:bg-blue-600"
+            >
+              Clear Filter
             </button>
           </form>
         </div>
