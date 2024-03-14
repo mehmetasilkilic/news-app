@@ -101,16 +101,16 @@ const Home = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full ">
       <nav className="bg-gray-800 p-4">
         <div className="container flex justify-center items-center">
           <SearchBar />
         </div>
       </nav>
 
-      <section className="mb-8">
+      <section className="mb-8 pl-2">
         <div className="container mx-auto my-8">
-          <h2 className="text-3xl font-semibold">Latest News</h2>
+          <h2 className="text-3xl font-semibold ">Latest News</h2>
           <InfiniteScroll
             dataLength={news.length}
             next={fetchMoreData}
